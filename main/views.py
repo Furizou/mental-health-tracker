@@ -15,11 +15,11 @@ import datetime
 # Create your views here.
 @login_required(login_url='/login')
 def show_main(request):
-    mood_entries = MoodEntry.objects.all()
+    mood_entries = MoodEntry.objects.filter(user=request.user)
     
     context = {
         'npm' : '2306228390',
-        'name': 'Kukuh Cikal Yuntama',
+        'name': request.user.username,
         'class': 'PBP F',
         'mood_entries': mood_entries,
         'last_login': request.COOKIES['last_login'],
@@ -31,7 +31,9 @@ def create_mood_entry(request):
     form = MoodEntryForm(request.POST or None)
 
     if form.is_valid() and request.method == "POST":
-        form.save()
+        mood_entry = form.save(commit=False)
+        mood_entry.user = request.user
+        mood_entry.save()
         return redirect('main:show_main')
 
     context = {'form': form}
